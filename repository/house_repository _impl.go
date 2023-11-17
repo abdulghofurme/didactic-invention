@@ -20,8 +20,8 @@ func (repository *HouseRepositoryImpl) Create(
 	tx *sql.Tx,
 	house domain.House,
 ) domain.House {
-	SQL := `insert into houses(id, name) values(?, ?)`
-	_, err := tx.ExecContext(ctx, SQL, house.ID, house.Name)
+	SQL := `insert into houses(id, block_name, block_number) values(?, ?, ?)`
+	_, err := tx.ExecContext(ctx, SQL, house.ID, house.BlockName, house.BlockNumber)
 	helper.PanicIfError(err)
 
 	house, _ = repository.FindByID(ctx, tx, house.ID)
@@ -33,8 +33,16 @@ func (repository *HouseRepositoryImpl) Update(
 	tx *sql.Tx,
 	house domain.House,
 ) domain.House {
-	SQL := `update houses set name=?, updated_at=?`
-	_, err := tx.ExecContext(ctx, SQL, house.Name, house.UpdatedAt)
+	SQL := `update houses set block_name=?, block_number=?, updated_at=? where id=?`
+
+	_, err := tx.ExecContext(
+		ctx,
+		SQL,
+		house.BlockName,
+		house.BlockNumber,
+		house.UpdatedAt,
+		house.ID,
+	)
 	helper.PanicIfError(err)
 
 	house, _ = repository.FindByID(ctx, tx, house.ID)
@@ -56,7 +64,10 @@ func (repository *HouseRepositoryImpl) FindByID(
 	tx *sql.Tx,
 	houseId string,
 ) (domain.House, error) {
-	SQL := `select id, name, created_at, updated_at, deleted_at from houses where id=?`
+	SQL := `select 
+	id, block_name, block_number, created_at, updated_at, deleted_at 
+	from houses 
+	where id=?`
 	rows, err := tx.QueryContext(ctx, SQL, houseId)
 	helper.PanicIfError(err)
 	defer rows.Close()
@@ -65,7 +76,8 @@ func (repository *HouseRepositoryImpl) FindByID(
 	if rows.Next() {
 		err := rows.Scan(
 			&house.ID,
-			&house.Name,
+			&house.BlockName,
+			&house.BlockNumber,
 			&house.CreatedAt,
 			&house.UpdatedAt,
 			&house.DeletedAt,
@@ -78,12 +90,17 @@ func (repository *HouseRepositoryImpl) FindByID(
 	return house, errors.New("rumah tidak ditemukan")
 }
 
-func (repository *HouseRepositoryImpl) FindByName(
+func (repository *HouseRepositoryImpl) FindByBlockNumber(
 	ctx context.Context,
-	tx *sql.Tx, houseName string,
+	tx *sql.Tx,
+	houseBlock string,
+	houseNumber int,
 ) (domain.House, error) {
-	SQL := `select id, name, created_at, updated_at, deleted_at from houses where name=?`
-	rows, err := tx.QueryContext(ctx, SQL, houseName)
+	SQL := `select 
+	id, block_name, block_number, created_at, updated_at, deleted_at 
+	from houses 
+	where block_name=? and block_number=?`
+	rows, err := tx.QueryContext(ctx, SQL, houseBlock, houseNumber)
 	helper.PanicIfError(err)
 	defer rows.Close()
 
@@ -91,7 +108,8 @@ func (repository *HouseRepositoryImpl) FindByName(
 	if rows.Next() {
 		err := rows.Scan(
 			&house.ID,
-			&house.Name,
+			&house.BlockName,
+			&house.BlockNumber,
 			&house.CreatedAt,
 			&house.UpdatedAt,
 			&house.DeletedAt,
@@ -108,7 +126,11 @@ func (repository *HouseRepositoryImpl) FindAll(
 	ctx context.Context,
 	tx *sql.Tx,
 ) []domain.House {
-	SQL := `select id, name, created_at, updated_at, deleted_at from houses where deleted_at is null`
+	SQL := `select 
+	id, block_name, block_number, created_at, updated_at, deleted_at 
+	from houses 
+	where deleted_at is null 
+	order by block_name, block_number`
 	rows, err := tx.QueryContext(ctx, SQL)
 	helper.PanicIfError(err)
 	defer rows.Close()
@@ -119,7 +141,8 @@ func (repository *HouseRepositoryImpl) FindAll(
 		house := domain.House{}
 		err := rows.Scan(
 			&house.ID,
-			&house.Name,
+			&house.BlockName,
+			&house.BlockNumber,
 			&house.CreatedAt,
 			&house.UpdatedAt,
 			&house.DeletedAt,
