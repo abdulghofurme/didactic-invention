@@ -6,9 +6,10 @@ import (
 )
 
 type House struct {
-	ID        string
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt sql.NullTime
+	ID          string
+	BlockName   string
+	BlockNumber int
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   sql.NullTime
 }
