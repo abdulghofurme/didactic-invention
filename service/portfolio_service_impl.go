@@ -136,7 +136,7 @@ func (service *PortfolioServiceImpl) FindAll(ctx context.Context) []web.Portfoli
 
 	portfolios := service.PortfolioRepository.FindAll(ctx, tx)
 
-	var portfoliosResponse []web.PortfolioResponse
+	portfoliosResponse := []web.PortfolioResponse{}
 	for _, portfolio := range portfolios {
 		portfoliosResponse = append(portfoliosResponse, helper.ToPortfolioResponse(&portfolio))
 	}
