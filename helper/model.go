@@ -18,3 +18,16 @@ func ToHouseResponse(house *domain.House) web.HouseResponse {
 		DeletedAt:   SQLTimeNullToString(&house.DeletedAt),
 	}
 }
+
+func ToPortfolioResponse(portfolio *domain.Portfolio) web.PortfolioResponse {
+	return web.PortfolioResponse{
+		ID:          portfolio.ID,
+		Name:        portfolio.Name,
+		Description: portfolio.Description,
+		Balance:     portfolio.Balance,
+		Nominal:     portfolio.Nominal,
+		CreatedAt:   portfolio.CreatedAt.String(),
+		UpdatedAt:   portfolio.UpdatedAt.String(),
+		DeletedAt:   SQLTimeNullToString(&portfolio.DeletedAt),
+	}
+}
