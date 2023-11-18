@@ -101,6 +101,7 @@ func (controller *PortfolioControllerImpl) FindById(
 
 	helper.WriteToResponseBody(writer, webResponse)
 }
+
 func (controller *PortfolioControllerImpl) FindAll(
 	writer http.ResponseWriter,
 	request *http.Request,

@@ -31,3 +31,14 @@ func ToPortfolioResponse(portfolio *domain.Portfolio) web.PortfolioResponse {
 		DeletedAt:   SQLTimeNullToString(&portfolio.DeletedAt),
 	}
 }
+
+func ToPortfolioHouseResponse(portfolioHouse *domain.PortfolioHouse) web.PortfolioHouseResponse {
+	return web.PortfolioHouseResponse{
+		ID:        portfolioHouse.ID,
+		House:     ToHouseResponse(&portfolioHouse.House),
+		Portfolio: ToPortfolioResponse(&portfolioHouse.Portfolio),
+		CreatedAt: portfolioHouse.CreatedAt.String(),
+		UpdatedAt: portfolioHouse.UpdatedAt.String(),
+		DeletedAt: SQLTimeNullToString(&portfolioHouse.DeletedAt),
+	}
+}
