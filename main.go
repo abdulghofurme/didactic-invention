@@ -36,6 +36,14 @@ func main() {
 	)
 	portfolioController := controller.NewPortfolioController(portfolioService)
 
+	portfolioHouseRepository := repository.NewPortfolioHouseRepository()
+	portfolioHouseService := service.NewPortfolioHouseService(
+		portfolioHouseRepository,
+		db,
+		validate,
+	)
+	portfolioHouseController := controller.NewPortfolioHouseController(portfolioHouseService)
+
 	router.POST("/api/houses", houseController.Create)
 	router.GET("/api/houses", houseController.FindAll)
 	router.GET("/api/houses/:id", houseController.FindById)
@@ -47,6 +55,12 @@ func main() {
 	router.GET("/api/portfolios/:id", portfolioController.FindById)
 	router.PUT("/api/portfolios/:id", portfolioController.Update)
 	router.DELETE("/api/portfolios/:id", portfolioController.Delete)
+
+	router.POST("/api/portfolio-houses", portfolioHouseController.Create)
+	router.GET("/api/portfolio-houses", portfolioHouseController.FindAll)
+	router.GET("/api/portfolio-houses/:id", portfolioHouseController.FindById)
+	router.PUT("/api/portfolio-houses/:id", portfolioHouseController.Update)
+	router.DELETE("/api/portfolio-houses/:id", portfolioHouseController.Delete)
 
 	server := http.Server{
 		Addr:    config.MyENV.SERVER_ADDRESS,
