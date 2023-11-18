@@ -69,14 +69,13 @@ func (controller *HouseControllerImpl) Delete(
 ) {
 	houseId := params.ByName("id")
 
-	houseResponse := controller.HouseService.Delete(
+	controller.HouseService.Delete(
 		request.Context(),
 		houseId,
 	)
 	webResponse := web.WebResponse{
 		Code:   http.StatusOK,
 		Status: "OK",
-		Data:   houseResponse,
 	}
 
 	helper.WriteToResponseBody(writer, webResponse)
