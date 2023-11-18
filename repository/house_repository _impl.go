@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/abdulghofurme/go-mkr/helper"
 	"github.com/abdulghofurme/go-mkr/model/domain"
@@ -24,7 +23,7 @@ func (repository *HouseRepositoryImpl) Create(
 	_, err := tx.ExecContext(ctx, SQL, house.ID, house.BlockName, house.BlockNumber)
 	helper.PanicIfError(err)
 
-	house, _ = repository.FindByID(ctx, tx, house.ID)
+	house = repository.FindByID(ctx, tx, house.ID)
 	return house
 }
 
@@ -45,7 +44,7 @@ func (repository *HouseRepositoryImpl) Update(
 	)
 	helper.PanicIfError(err)
 
-	house, _ = repository.FindByID(ctx, tx, house.ID)
+	house = repository.FindByID(ctx, tx, house.ID)
 	return house
 }
 
@@ -63,11 +62,10 @@ func (repository *HouseRepositoryImpl) FindByID(
 	ctx context.Context,
 	tx *sql.Tx,
 	houseId string,
-) (domain.House, error) {
+) domain.House {
 	SQL := `select 
 	id, block_name, block_number, created_at, updated_at, deleted_at 
-	from houses 
-	where id=?`
+	from houses where id=? and deleted_at is null`
 	rows, err := tx.QueryContext(ctx, SQL, houseId)
 	helper.PanicIfError(err)
 	defer rows.Close()
@@ -83,11 +81,9 @@ func (repository *HouseRepositoryImpl) FindByID(
 			&house.DeletedAt,
 		)
 		helper.PanicIfError(err)
-
-		return house, nil
 	}
 
-	return house, errors.New("rumah tidak ditemukan")
+	return house
 }
 
 func (repository *HouseRepositoryImpl) FindByBlockNumber(
@@ -95,11 +91,10 @@ func (repository *HouseRepositoryImpl) FindByBlockNumber(
 	tx *sql.Tx,
 	houseBlock string,
 	houseNumber int,
-) (domain.House, error) {
+) domain.House {
 	SQL := `select 
 	id, block_name, block_number, created_at, updated_at, deleted_at 
-	from houses 
-	where block_name=? and block_number=?`
+	from houses where block_name=? and block_number=?`
 	rows, err := tx.QueryContext(ctx, SQL, houseBlock, houseNumber)
 	helper.PanicIfError(err)
 	defer rows.Close()
@@ -115,11 +110,9 @@ func (repository *HouseRepositoryImpl) FindByBlockNumber(
 			&house.DeletedAt,
 		)
 		helper.PanicIfError(err)
-
-		return house, nil
 	}
 
-	return house, errors.New("rumah tidak ditemukan")
+	return house
 }
 
 func (repository *HouseRepositoryImpl) FindAll(
@@ -128,8 +121,7 @@ func (repository *HouseRepositoryImpl) FindAll(
 ) []domain.House {
 	SQL := `select 
 	id, block_name, block_number, created_at, updated_at, deleted_at 
-	from houses 
-	where deleted_at is null 
+	from houses where deleted_at is null 
 	order by block_name, block_number`
 	rows, err := tx.QueryContext(ctx, SQL)
 	helper.PanicIfError(err)
