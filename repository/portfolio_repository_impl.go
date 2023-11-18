@@ -77,7 +77,7 @@ func (repository *PortfolioRepositoryImpl) FindByID(
 ) domain.Portfolio {
 	SQL := `select 
 	id, name, description, balance, nominal, created_at, updated_at, deleted_at 
-	from portfolios where id=? deleted_at is null`
+	from portfolios where id=? and deleted_at is null`
 	rows, err := tx.QueryContext(ctx, SQL, portfolioId)
 	helper.PanicIfError(err)
 	defer rows.Close()
