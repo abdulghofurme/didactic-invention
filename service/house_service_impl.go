@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/abdulghofurme/go-mkr/helper"
-	"github.com/abdulghofurme/go-mkr/model/domain"
 	"github.com/abdulghofurme/go-mkr/model/web"
 	"github.com/abdulghofurme/go-mkr/repository"
 	"github.com/go-playground/validator/v10"
@@ -43,18 +42,17 @@ func (service *HouseServiceImpl) Create(
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
 
-	_, err = service.HouseRepository.FindByBlockNumber(ctx, tx, houseRequest.BlockName, houseRequest.BlockNumber)
-	if err == nil {
-		panic(fmt.Sprintf("%v%v sudah digunakan", houseRequest.BlockName, houseRequest.BlockNumber))
-	}
+	house := service.HouseRepository.FindByBlockNumber(
+		ctx,
+		tx,
+		houseRequest.BlockName,
+		houseRequest.BlockNumber,
+	)
+	house.ID = uuid.NewString()
+	house.BlockName = houseRequest.BlockName
+	house.BlockNumber = houseRequest.BlockNumber
 
-	house := domain.House{
-		ID:          uuid.NewString(),
-		BlockName:   houseRequest.BlockName,
-		BlockNumber: houseRequest.BlockNumber,
-	}
 	house = service.HouseRepository.Create(ctx, tx, house)
-
 	return helper.ToHouseResponse(&house)
 }
 
@@ -69,17 +67,15 @@ func (service *HouseServiceImpl) Update(
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
 
-	house, err := service.HouseRepository.FindByBlockNumber(
+	house := service.HouseRepository.FindByBlockNumber(
 		ctx,
 		tx,
 		houseRequest.BlockName,
 		houseRequest.BlockNumber,
 	)
-
-	if err == nil && house.ID != houseRequest.ID {
+	if house.ID != houseRequest.ID {
 		panic(fmt.Sprintf("%v%v sudah digunakan", houseRequest.BlockName, houseRequest.BlockNumber))
 	}
-
 	if house.DeletedAt.Valid {
 		panic(fmt.Sprintf("%v%v sudah tidak lagi aktif", houseRequest.BlockName, houseRequest.BlockNumber))
 	}
@@ -89,7 +85,6 @@ func (service *HouseServiceImpl) Update(
 	house.UpdatedAt = time.Now()
 
 	house = service.HouseRepository.Update(ctx, tx, house)
-
 	return helper.ToHouseResponse(&house)
 }
 
@@ -101,10 +96,9 @@ func (service *HouseServiceImpl) Delete(
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
 
-	house, err := service.HouseRepository.FindByID(ctx, tx, houseId)
-	helper.PanicIfError(err)
-	if house.DeletedAt.Valid {
-		panic(fmt.Sprintf("%v%v sudah tidak lagi aktif", house.BlockName, house.BlockNumber))
+	house := service.HouseRepository.FindByID(ctx, tx, houseId)
+	if house.ID == "" {
+		return helper.ToHouseResponse(&house)
 	}
 	house.DeletedAt = sql.NullTime{
 		Time:  time.Now(),
@@ -123,12 +117,7 @@ func (service *HouseServiceImpl) FindByID(
 	helper.PanicIfError(err)
 	defer helper.CommitOrRollback(tx)
 
-	house, err := service.HouseRepository.FindByID(ctx, tx, houseId)
-	helper.PanicIfError(err)
-	if house.DeletedAt.Valid {
-		panic(fmt.Sprintf("%v%v sudah tidak lagi aktif", house.BlockName, house.BlockNumber))
-	}
-
+	house := service.HouseRepository.FindByID(ctx, tx, houseId)
 	return helper.ToHouseResponse(&house)
 }
 
