@@ -8,6 +8,10 @@ import (
 	"github.com/abdulghofurme/go-mkr/model/domain"
 )
 
+func NewPortfolioRepository() PortfolioRepository {
+	return &PortfolioRepositoryImpl{}
+}
+
 type PortfolioRepositoryImpl struct{}
 
 func (repository *PortfolioRepositoryImpl) Create(
@@ -103,7 +107,7 @@ func (repository *PortfolioRepositoryImpl) FindByName(
 ) domain.Portfolio {
 	SQL := `select 
 	id, name, description, balance, nominal, created_at, updated_at, deleted_at 
-	from portfolios where name=? deleted_at is null`
+	from portfolios where name=?`
 	rows, err := tx.QueryContext(ctx, SQL, portfolioName)
 	helper.PanicIfError(err)
 	defer rows.Close()
