@@ -128,7 +128,7 @@ func (service *HouseServiceImpl) FindAll(ctx context.Context) []web.HouseRespons
 
 	houses := service.HouseRepository.FindAll(ctx, tx)
 
-	var housesResponse []web.HouseResponse
+	housesResponse := []web.HouseResponse{}
 	for _, house := range houses {
 		housesResponse = append(housesResponse, helper.ToHouseResponse(&house))
 	}
